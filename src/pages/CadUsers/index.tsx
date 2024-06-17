@@ -61,7 +61,7 @@ const CadUsers: React.FC = () => {
         <Container>
             <Logo>
                 <img src={logoImg} alt="Minha Carteira" />
-                <h2>Minha Carteira</h2>
+                <h2>Adicionar Usuários</h2>
             </Logo>
 
             <Form onSubmit={handleSubmit}>

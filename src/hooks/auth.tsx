@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
+import axios from 'axios';
 
 interface IAuthContext {
     logged: boolean;
@@ -15,12 +16,21 @@ const AuthProvider: React.FC = ({ children }) => {
         return !!isLogged;
     });
 
-    const signIn = (email: string, password: string) => {
-        if(email === 'nathan@email.com' && password === '123'){
-            localStorage.setItem('@minha-carteira:logged', 'true');
-            setLogged(true);
-        }else{
-            alert('Senha ou usuário inválidos!');
+    const signIn = async (email: string, password: string) => {
+        try {
+            const response = await axios.post('http://localhost:8080/usuarios/login', {
+                email,
+                senha: password
+            });
+
+            if (response.data.success) {
+                localStorage.setItem('@minha-carteira:logged', 'true');
+                setLogged(true);
+            } else {
+                alert('Senha ou usuário inválidos!');
+            }
+        } catch (error) {
+            alert('Erro ao fazer login! Por favor, tente novamente.');
         }
     }
 
