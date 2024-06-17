@@ -7,7 +7,9 @@ import {
     MdArrowUpward,
     MdExitToApp,
     MdClose,
-    MdMenu, 
+    MdMenu,
+    MdAccountCircle,
+    MdMonetizationOn
 } from 'react-icons/md';
 
 import logoImg from '../../assets/logo.svg';
@@ -71,6 +73,21 @@ const Aside: React.FC = () => {
                 <MenuItemLink href="/list/exit-balance">
                     <MdArrowDownward />
                     Saídas
+                </MenuItemLink>
+
+                <MenuItemLink href="/CadUser">
+                    <MdAccountCircle />
+                    Cadastro de Usuário
+                </MenuItemLink>
+
+                <MenuItemLink href="/CadMovement">
+                    <MdMonetizationOn />
+                    Cadastro de Movimento
+                </MenuItemLink>
+
+                <MenuItemLink href="/adm">
+                    <MdMonetizationOn />
+                    Gestão de usuário
                 </MenuItemLink>
 
                 <MenuItemButton onClick={signOut}>
