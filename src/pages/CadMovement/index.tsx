@@ -46,7 +46,7 @@ const CadMovement: React.FC = () => {
         const frequencyLabel = frequency === 'Recorrente' ? 'recorrentes' : 'eventuais';
 
         // Determine if it's an "Entrada" or "Saída"
-        const movementType = isEntrada ? 'entradas' : 'saidas';
+        const movementType = !isEntrada ? 'entradas' : 'saidas';
 
         // Prepare the endpoint
         const endpoint = `http://localhost:8080/${movementType}/${frequencyLabel}`;
