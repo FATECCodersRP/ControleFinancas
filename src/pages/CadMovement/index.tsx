@@ -23,7 +23,7 @@ const CadMovement: React.FC = () => {
     const [date, setDate] = useState<string>('');
     const [isEntrada, setIsEntrada] = useState<boolean>(true);
 
-    const { signIn } = useAuth();
+    const { userId } = useAuth(); // Obtain the logged-in user's ID
 
     const optionsFreq = [
         { value: 'Recorrente', label: 'Recorrente' },
@@ -37,11 +37,16 @@ const CadMovement: React.FC = () => {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
+        if (userId === null) {
+            alert('Usuário não está logado!');
+            return;
+        }
+
         // Determine frequency label
         const frequencyLabel = frequency === 'Recorrente' ? 'recorrentes' : 'eventuais';
 
         // Determine if it's an "Entrada" or "Saída"
-        const movementType = !isEntrada ? 'entradas' : 'saidas';
+        const movementType = isEntrada ? 'entradas' : 'saidas';
 
         // Prepare the endpoint
         const endpoint = `http://localhost:8080/${movementType}/${frequencyLabel}`;
@@ -52,7 +57,7 @@ const CadMovement: React.FC = () => {
             valor: value,
             frequencia: frequency,
             data: date,
-            idUsuario: 10
+            idUsuario: userId // Use the logged-in user's ID
         };
 
         try {
@@ -62,17 +67,36 @@ const CadMovement: React.FC = () => {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(requestBody),
-            });console.log(requestBody)
+            });
+
+            console.log(requestBody);
 
             if (response.ok) {
                 alert('Movimento cadastrado com sucesso!');
+
+                // Make the second call to the new endpoint
+                const secondEndpoint = `http://localhost:8080/registro/registra/${movementType}/${frequencyLabel}/${userId}`;
+
+                const secondResponse = await fetch(secondEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody),
+                });
+
+                if (secondResponse.ok) {
+                    console.log('Segunda chamada realizada com sucesso!');
+                } else {
+                    console.error('Erro na segunda chamada:', secondResponse.statusText);
+                }
             } else {
                 alert('Erro ao cadastrar movimento!');
             }
         } catch (error) {
             console.error('Erro:', error);
-            console.log(requestBody)
-            console.log(endpoint)
+            console.log(requestBody);
+            console.log(endpoint);
             alert('Erro ao cadastrar movimento!');
         }
     };
