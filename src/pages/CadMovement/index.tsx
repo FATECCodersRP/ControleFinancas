@@ -23,7 +23,10 @@ const CadMovement: React.FC = () => {
     const [date, setDate] = useState<string>('');
     const [isEntrada, setIsEntrada] = useState<boolean>(true);
 
-    const { userId } = useAuth(); // Obtain the logged-in user's ID
+    const { userId, userName, isAdmin } = useAuth(); // Obtain the logged-in user's ID
+
+    console.log(isAdmin)
+    console.log(userName)
 
     const optionsFreq = [
         { value: 'Recorrente', label: 'Recorrente' },

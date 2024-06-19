@@ -4,6 +4,8 @@ import axios from 'axios';
 import ContentHeader from '../../components/ContentHeader';
 import SelectInput from '../../components/SelectInput';
 
+import { useAuth } from '../../hooks/auth';
+
 import { 
     Container, 
     Content, 
@@ -12,7 +14,9 @@ import {
     TableRow, 
     TableHeader, 
     TableCell,
-    SearchInput
+    SearchInput,
+    Button,
+    ButtonDelete
 } from './styles';
 
 interface IUser {
@@ -26,6 +30,8 @@ const UserTable: React.FC = () => {
     const [filteredUsers, setFilteredUsers] = useState<IUser[]>([]);
     const [filterField, setFilterField] = useState<string>('nome');
     const [searchTerm, setSearchTerm] = useState<string>('');
+
+    const { userId } = useAuth();
 
     useEffect(() => {
         const fetchUsers = async () => {
@@ -56,6 +62,21 @@ const UserTable: React.FC = () => {
         setSearchTerm(event.target.value);
     };
 
+    const handleEdit = (id: string) => {
+        console.log(`Edit user with id: ${id}`);
+        // Implementar lógica de edição aqui
+    };
+
+    const handleDelete = async (id: string) => {
+        try {
+            await axios.delete(`http://localhost:8080/usuarios/${id}`);
+            setUsers(users.filter(user => user.id !== id));
+            setFilteredUsers(filteredUsers.filter(user => user.id !== id));
+        } catch (error) {
+            console.error(`Erro ao deletar usuário com id ${id}:`, error);
+        }
+    };
+
     return (
         <Container>
             <ContentHeader title="Usuários" lineColor="#4E41F0">
@@ -83,6 +104,8 @@ const UserTable: React.FC = () => {
                             <TableHeader>ID</TableHeader>
                             <TableHeader>Nome</TableHeader>
                             <TableHeader>Email</TableHeader>
+                            <TableHeader>Editar</TableHeader>
+                            <TableHeader>Deletar</TableHeader>
                         </TableRow>
                     </thead>
                     <tbody>
@@ -91,6 +114,12 @@ const UserTable: React.FC = () => {
                                 <TableCell>{user.id}</TableCell>
                                 <TableCell>{user.nome}</TableCell>
                                 <TableCell>{user.email}</TableCell>
+                                <TableCell>
+                                    <Button onClick={() => handleEdit(user.id)}>Editar</Button>
+                                </TableCell>
+                                <TableCell>
+                                    <ButtonDelete onClick={() => handleDelete(user.id)}>Deletar</ButtonDelete>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </tbody>

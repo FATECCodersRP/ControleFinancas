@@ -1,5 +1,6 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
+import PrivateRoute from './private.routes';
 
 import Layout from '../components/Layout';
 import Dashboard from '../pages/Dashboard';
@@ -15,7 +16,7 @@ const AppRoutes: React.FC = () => (
             <Route path="/list/:type" exact component={List} /> 
             <Route path="/CadUser" exact component={CadUsers} /> 
             <Route path="/CadMovement" exact component={CadMovement} /> 
-            <Route path="/adm" exact component={UserTable} />        
+            <PrivateRoute path="/adm" exact component={UserTable} />         
             
         </Switch>
     </Layout>

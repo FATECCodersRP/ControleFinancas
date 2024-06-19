@@ -18,7 +18,7 @@ export const Table = styled.table`
 
 export const TableRow = styled.tr`
     &:nth-child(even) {
-        background-color: #f2f2f2;
+        background-color: #00008b;
     }
 `;
 
@@ -45,5 +45,33 @@ export const SearchInput = styled.input`
     &:focus {
         outline: none;
         border-color: #4E41F0;
+    }
+`;
+
+export const Button = styled.button`
+    padding: 8px 12px;
+    margin: 0 5px;
+    font-size: 14px;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    background-color: #4E41F0;
+    cursor: pointer;
+    transition: background-color 0.3s;
+
+    &:hover {
+        background-color: #372ba7;
+    }
+
+    &:focus {
+        outline: none;
+    }
+`;
+
+export const ButtonDelete = styled(Button)`
+    background-color: #F04141;
+
+    &:hover {
+        background-color: #d13333;
     }
 `;

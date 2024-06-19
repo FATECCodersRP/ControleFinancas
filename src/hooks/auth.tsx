@@ -4,6 +4,8 @@ import axios from 'axios';
 interface IAuthContext {
     logged: boolean;
     userId: number | null;
+    userName: string | null;
+    isAdmin: boolean | null;
     signIn(email: string, password: string): void;
     signOut(): void;
 }
@@ -21,6 +23,16 @@ const AuthProvider: React.FC = ({ children }) => {
         return storedUserId ? parseInt(storedUserId) : null;
     });
 
+    const [userName, setUserName] = useState<string | null>(() => {
+        const storedUserName = localStorage.getItem('@minha-carteira:userName');
+        return storedUserName ? storedUserName : null;
+    });
+
+    const [isAdmin, setIsAdmin] = useState<boolean | null>(() => {
+        const storedIsAdmin = localStorage.getItem('@minha-carteira:isAdmin');
+        return storedIsAdmin ? JSON.parse(storedIsAdmin) : null;
+    });
+
     const signIn = async (email: string, password: string) => {
         try {
             const response = await axios.post('http://localhost:8080/usuarios/login', {
@@ -31,14 +43,20 @@ const AuthProvider: React.FC = ({ children }) => {
             console.log("resposta api --> ", response);
 
             if (response.status === 200) {
-                const { id } = response.data; // Supondo que a resposta contém o ID do usuário
+                const { id, nome, adm } = response.data; // Supondo que a resposta contém o ID, nome e o campo adm do usuário
                 localStorage.setItem('@minha-carteira:logged', 'true');
                 localStorage.setItem('@minha-carteira:userId', id.toString());
+                localStorage.setItem('@minha-carteira:userName', nome);
+                localStorage.setItem('@minha-carteira:isAdmin', JSON.stringify(adm));
                 setLogged(true);
                 setUserId(id);
+                setUserName(nome);
+                setIsAdmin(adm);
                 console.log(email);
                 console.log(password);
                 console.log(id);
+                console.log(nome);
+                console.log(adm);
             } else {
                 alert('Senha ou usuário inválidos!');
             }
@@ -52,12 +70,16 @@ const AuthProvider: React.FC = ({ children }) => {
     const signOut = () => {
         localStorage.removeItem('@minha-carteira:logged');
         localStorage.removeItem('@minha-carteira:userId');
+        localStorage.removeItem('@minha-carteira:userName');
+        localStorage.removeItem('@minha-carteira:isAdmin');
         setLogged(false);
         setUserId(null);
+        setUserName(null);
+        setIsAdmin(null);
     };
 
     return (
-        <AuthContext.Provider value={{ logged, userId, signIn, signOut }}>
+        <AuthContext.Provider value={{ logged, userId, userName, isAdmin, signIn, signOut }}>
             {children}
         </AuthContext.Provider>
     );

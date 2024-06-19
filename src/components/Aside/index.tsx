@@ -1,4 +1,5 @@
-import React, {useState} from 'react';
+// Aside.tsx
+import React, { useState } from 'react';
 import Toggle from '../Toggle';
 
 import {
@@ -30,29 +31,26 @@ import {
 }  from './styles';
 
 const Aside: React.FC = () => {
-    const { signOut } = useAuth();
+    const { signOut, isAdmin } = useAuth();
     const { toggleTheme, theme } = useTheme();
 
     const [toggleMenuIsOpened, setToggleMenuIsOpened ] = useState(false);
     const [darkTheme, setDarkTheme] = useState(() => theme.title === 'dark' ? true : false);
 
-
     const handleToggleMenu = () => {
         setToggleMenuIsOpened(!toggleMenuIsOpened);
     }
-
 
     const handleChangeTheme = () => {
         setDarkTheme(!darkTheme);
         toggleTheme();
     }
 
-
     return (
         <Container menuIsOpen={toggleMenuIsOpened}>
             <Header>
                 <ToggleMenu onClick={handleToggleMenu}>
-                { toggleMenuIsOpened ? <MdClose /> : <MdMenu /> }
+                    { toggleMenuIsOpened ? <MdClose /> : <MdMenu /> }
                 </ToggleMenu>
 
                 <LogImg src={logoImg} alt="Logo Minha Carteira" />
@@ -85,10 +83,12 @@ const Aside: React.FC = () => {
                     Cadastro de Movimento
                 </MenuItemLink>
 
-                <MenuItemLink href="/adm">
-                    <MdMonetizationOn />
-                    Gestão de usuário
-                </MenuItemLink>
+                {isAdmin && (
+                    <MenuItemLink href="/adm">
+                        <MdMonetizationOn />
+                        Gestão de usuário
+                    </MenuItemLink>
+                )}
 
                 <MenuItemButton onClick={signOut}>
                     <MdExitToApp />
