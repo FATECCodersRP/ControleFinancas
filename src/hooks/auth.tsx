@@ -36,6 +36,9 @@ const AuthProvider: React.FC = ({ children }) => {
                 localStorage.setItem('@minha-carteira:userId', id.toString());
                 setLogged(true);
                 setUserId(id);
+                console.log(email);
+                console.log(password);
+                console.log(id);
             } else {
                 alert('Senha ou usuário inválidos!');
             }

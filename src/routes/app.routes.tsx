@@ -6,7 +6,7 @@ import Dashboard from '../pages/Dashboard';
 import List from '../pages/List';
 import CadUsers from "../pages/CadUsers";
 import CadMovement from "../pages/CadMovement"
-import UserManagement from "../pages/UserManagement"
+import UserTable from "../pages/UserManagement"
 
 const AppRoutes: React.FC = () => (
     <Layout>
@@ -15,7 +15,7 @@ const AppRoutes: React.FC = () => (
             <Route path="/list/:type" exact component={List} /> 
             <Route path="/CadUser" exact component={CadUsers} /> 
             <Route path="/CadMovement" exact component={CadMovement} /> 
-            <Route path="/adm" exact component={UserManagement} />         
+            <Route path="/adm" exact component={UserTable} />        
             
         </Switch>
     </Layout>

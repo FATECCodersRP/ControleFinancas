@@ -1,48 +1,103 @@
 import React, { useState, useEffect } from 'react';
-import UserTable from '../../components/UserTable';
-import { Container, SearchInput } from './styles';
+import axios from 'axios';
 
-const mockUsers = [
-    { id: 1, name: 'John Doe', email: 'john@example.com', role: 'User' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com', role: 'Admin' },
-    // Add more mock users as needed
-];
+import ContentHeader from '../../components/ContentHeader';
+import SelectInput from '../../components/SelectInput';
 
-const UserManagement: React.FC = () => {
-    const [searchTerm, setSearchTerm] = useState('');
-    const [users, setUsers] = useState(mockUsers);
+import { 
+    Container, 
+    Content, 
+    Filters, 
+    Table, 
+    TableRow, 
+    TableHeader, 
+    TableCell,
+    SearchInput
+} from './styles';
+
+interface IUser {
+    id: string;
+    nome: string;
+    email: string;
+}
+
+const UserTable: React.FC = () => {
+    const [users, setUsers] = useState<IUser[]>([]);
+    const [filteredUsers, setFilteredUsers] = useState<IUser[]>([]);
+    const [filterField, setFilterField] = useState<string>('nome');
+    const [searchTerm, setSearchTerm] = useState<string>('');
 
     useEffect(() => {
-        // Fetch users from an API if needed
+        const fetchUsers = async () => {
+            try {
+                const response = await axios.get('http://localhost:8080/usuarios');
+                setUsers(response.data);
+                setFilteredUsers(response.data);
+            } catch (error) {
+                console.error('Erro ao buscar usuários:', error);
+            }
+        };
+
+        fetchUsers();
     }, []);
 
-    const handleEdit = (userId: number) => {
-        // Handle edit user logic
-        console.log(`Edit user with ID: ${userId}`);
+    useEffect(() => {
+        const results = users.filter(user =>
+            user[filterField as keyof IUser].toString().toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredUsers(results);
+    }, [searchTerm, filterField, users]);
+
+    const handleFilterFieldChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setFilterField(event.target.value);
     };
 
-    const handleDelete = (userId: number) => {
-        // Handle delete user logic
-        console.log(`Delete user with ID: ${userId}`);
-        setUsers(users.filter(user => user.id !== userId));
+    const handleSearchTermChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(event.target.value);
     };
-
-    const filteredUsers = users.filter(user =>
-        user.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     return (
         <Container>
-            <h1>User Management</h1>
-            <SearchInput
-                type="text"
-                placeholder="Search user..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <UserTable users={filteredUsers} onEdit={handleEdit} onDelete={handleDelete} />
+            <ContentHeader title="Usuários" lineColor="#4E41F0">
+                <SelectInput 
+                    options={[
+                        { value: 'nome', label: 'Nome' },
+                        { value: 'id', label: 'ID' },
+                        { value: 'email', label: 'Email' },
+                    ]}
+                    onChange={handleFilterFieldChange} 
+                    defaultValue={filterField}
+                />
+                <SearchInput 
+                    type="text"
+                    placeholder="Buscar..."
+                    value={searchTerm}
+                    onChange={handleSearchTermChange}
+                />
+            </ContentHeader>
+
+            <Content>
+                <Table>
+                    <thead>
+                        <TableRow>
+                            <TableHeader>ID</TableHeader>
+                            <TableHeader>Nome</TableHeader>
+                            <TableHeader>Email</TableHeader>
+                        </TableRow>
+                    </thead>
+                    <tbody>
+                        {filteredUsers.map(user => (
+                            <TableRow key={user.id}>
+                                <TableCell>{user.id}</TableCell>
+                                <TableCell>{user.nome}</TableCell>
+                                <TableCell>{user.email}</TableCell>
+                            </TableRow>
+                        ))}
+                    </tbody>
+                </Table>
+            </Content>
         </Container>
     );
 };
 
-export default UserManagement;
+export default UserTable;
