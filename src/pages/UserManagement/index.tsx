@@ -19,10 +19,13 @@ import {
     ButtonDelete
 } from './styles';
 
-interface IUser {
+import EditUserPopup from '../../components/EditUser';
+
+export interface IUser {
     id: string;
     nome: string;
     email: string;
+    adm: boolean;
 }
 
 const UserTable: React.FC = () => {
@@ -30,6 +33,7 @@ const UserTable: React.FC = () => {
     const [filteredUsers, setFilteredUsers] = useState<IUser[]>([]);
     const [filterField, setFilterField] = useState<string>('nome');
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
 
     const { userId } = useAuth();
 
@@ -62,9 +66,19 @@ const UserTable: React.FC = () => {
         setSearchTerm(event.target.value);
     };
 
-    const handleEdit = (id: string) => {
-        console.log(`Edit user with id: ${id}`);
-        // Implementar lógica de edição aqui
+    const handleEdit = (user: IUser) => {
+        setSelectedUser(user);
+    };
+
+    const handleSave = async (editedUser: IUser) => {
+        try {
+            await axios.put(`http://localhost:8080/usuarios/${editedUser.id}`, editedUser);
+            setUsers(users.map(user => (user.id === editedUser.id ? editedUser : user)));
+            setFilteredUsers(filteredUsers.map(user => (user.id === editedUser.id ? editedUser : user)));
+            setSelectedUser(null);
+        } catch (error) {
+            console.error(`Erro ao atualizar usuário com id ${editedUser.id}:`, error);
+        }
     };
 
     const handleDelete = async (id: string) => {
@@ -104,6 +118,7 @@ const UserTable: React.FC = () => {
                             <TableHeader>ID</TableHeader>
                             <TableHeader>Nome</TableHeader>
                             <TableHeader>Email</TableHeader>
+                            <TableHeader>Admin</TableHeader> {/* Nova coluna */}
                             <TableHeader>Editar</TableHeader>
                             <TableHeader>Deletar</TableHeader>
                         </TableRow>
@@ -114,8 +129,9 @@ const UserTable: React.FC = () => {
                                 <TableCell>{user.id}</TableCell>
                                 <TableCell>{user.nome}</TableCell>
                                 <TableCell>{user.email}</TableCell>
+                                <TableCell>{user.adm ? 'Sim' : 'Não'}</TableCell> {/* Nova célula */}
                                 <TableCell>
-                                    <Button onClick={() => handleEdit(user.id)}>Editar</Button>
+                                    <Button onClick={() => handleEdit(user)}>Editar</Button>
                                 </TableCell>
                                 <TableCell>
                                     <ButtonDelete onClick={() => handleDelete(user.id)}>Deletar</ButtonDelete>
@@ -125,6 +141,14 @@ const UserTable: React.FC = () => {
                     </tbody>
                 </Table>
             </Content>
+
+            {selectedUser && (
+                <EditUserPopup 
+                    user={selectedUser}
+                    onClose={() => setSelectedUser(null)}
+                    onSave={handleSave}
+                />
+            )}
         </Container>
     );
 };
