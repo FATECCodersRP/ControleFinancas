@@ -3,6 +3,7 @@ import axios from 'axios';
 
 import ContentHeader from '../../components/ContentHeader';
 import SelectInput from '../../components/SelectInput';
+import { ToastContainer, toast } from 'react-toastify';
 
 import { useAuth } from '../../hooks/auth';
 
@@ -20,6 +21,8 @@ import {
 } from './styles';
 
 import EditUserPopup from '../../components/EditUser';
+import DelUserPopup from '../../components/DelUser';
+
 
 export interface IUser {
     id: string;
@@ -28,12 +31,14 @@ export interface IUser {
     adm: boolean;
 }
 
+
 const UserTable: React.FC = () => {
     const [users, setUsers] = useState<IUser[]>([]);
     const [filteredUsers, setFilteredUsers] = useState<IUser[]>([]);
     const [filterField, setFilterField] = useState<string>('nome');
     const [searchTerm, setSearchTerm] = useState<string>('');
     const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
+    const [userToDelete, setUserToDelete] = useState<IUser | null>(null);
 
     const { userId } = useAuth();
 
@@ -51,12 +56,25 @@ const UserTable: React.FC = () => {
         fetchUsers();
     }, []);
 
+    
+
     useEffect(() => {
         const results = users.filter(user =>
             user[filterField as keyof IUser].toString().toLowerCase().includes(searchTerm.toLowerCase())
         );
         setFilteredUsers(results);
     }, [searchTerm, filterField, users]);
+
+    const confirmDelete = (user: IUser) => {
+        setUserToDelete(user);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (userToDelete) {
+            await handleDelete(userToDelete.id);
+            setUserToDelete(null);
+        }
+    };
 
     const handleFilterFieldChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setFilterField(event.target.value);
@@ -90,6 +108,19 @@ const UserTable: React.FC = () => {
             console.error(`Erro ao deletar usuário com id ${id}:`, error);
         }
     };
+
+    //const handleDelete = async (userId: string) => {
+       // try {
+          //  await axios.delete(`http://localhost:8080/usuarios/${userId}`);
+           // setUsers(prevUsers => prevUsers.filter(user => user.id !== userId));
+          //  toast.success('Usuário deletado com sucesso!');
+       // } catch (error) {
+        //    console.error(`Erro ao deletar usuário com id ${userId}:`, error);
+           // toast.error('Erro ao deletar usuário.');
+       // } finally {
+        //    setUserToDelete(null); // Fecha o modal
+        //}
+   // };
 
     return (
         <Container>
@@ -134,7 +165,14 @@ const UserTable: React.FC = () => {
                                     <Button onClick={() => handleEdit(user)}>Editar</Button>
                                 </TableCell>
                                 <TableCell>
-                                    <ButtonDelete onClick={() => handleDelete(user.id)}>Deletar</ButtonDelete>
+                                    <ButtonDelete onClick={() => confirmDelete(user)}>Deletar</ButtonDelete>
+                                    {userToDelete && (
+                                        <DelUserPopup
+                                            user={userToDelete}
+                                            onClose={() => setUserToDelete(null)}
+                                            onDelete={handleDelete}
+                                        />
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}

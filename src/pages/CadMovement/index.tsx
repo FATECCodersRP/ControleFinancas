@@ -22,11 +22,12 @@ const CadMovement: React.FC = () => {
     const [frequency, setFrequency] = useState<string>('Recorrente');
     const [date, setDate] = useState<string>('');
     const [isEntrada, setIsEntrada] = useState<boolean>(true);
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-    const { userId, userName, isAdmin } = useAuth(); // Obtain the logged-in user's ID
+    const { userId, userName, isAdmin } = useAuth();
 
-    console.log(isAdmin)
-    console.log(userName)
+    console.log('Usuário Admin:', isAdmin);
+    console.log('Nome do Usuário:', userName);
 
     const optionsFreq = [
         { value: 'Recorrente', label: 'Recorrente' },
@@ -40,30 +41,39 @@ const CadMovement: React.FC = () => {
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
+        if (isSubmitting) {
+            console.log('Submissão já está em andamento.');
+            return;
+        }
+        setIsSubmitting(true);
+
         if (userId === null) {
             alert('Usuário não está logado!');
+            setIsSubmitting(false);
             return;
         }
 
-        // Determine frequency label
+        // Determinar o tipo de frequência e movimento
         const frequencyLabel = frequency === 'Recorrente' ? 'recorrentes' : 'eventuais';
+        const movementType = isEntrada ? 'entradas' : 'saidas'; // Ajuste para alternar corretamente
 
-        // Determine if it's an "Entrada" or "Saída"
-        const movementType = !isEntrada ? 'entradas' : 'saidas';
-
-        // Prepare the endpoint
+        // Preparar o endpoint e o corpo da requisição
         const endpoint = `http://localhost:8080/${movementType}/${frequencyLabel}`;
 
-        // Prepare the request body
         const requestBody = {
             descricao: description,
             valor: value,
             frequencia: frequency,
             data: date,
-            idUsuario: userId // Use the logged-in user's ID
+            idUsuario: userId,
         };
 
+        console.log('Movimento:', isEntrada ? 'Entrada' : 'Saída');
+        console.log('Endpoint:', endpoint);
+        console.log('Body:', requestBody);
+
         try {
+            // Primeira requisição
             const response = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
@@ -72,13 +82,18 @@ const CadMovement: React.FC = () => {
                 body: JSON.stringify(requestBody),
             });
 
-            console.log(requestBody);
+            console.log('Resposta da Primeira Requisição:', response);
 
             if (response.ok) {
+                const responseData = await response.json();
+                console.log('Dados Retornados da Primeira Requisição:', responseData);
+
                 alert('Movimento cadastrado com sucesso!');
 
-                // Make the second call to the new endpoint
+                // Segunda requisição
                 const secondEndpoint = `http://localhost:8080/registro/registra/${movementType}/${frequencyLabel}/${userId}`;
+                console.log('Preparando para enviar segunda requisição...');
+                console.log('Second Endpoint:', secondEndpoint);
 
                 const secondResponse = await fetch(secondEndpoint, {
                     method: 'POST',
@@ -88,19 +103,30 @@ const CadMovement: React.FC = () => {
                     body: JSON.stringify(requestBody),
                 });
 
+                console.log('Resposta da Segunda Requisição:', secondResponse);
+
                 if (secondResponse.ok) {
-                    console.log('Segunda chamada realizada com sucesso!');
+                    const secondResponseData = await secondResponse.json();
+                    console.log('Dados Retornados da Segunda Requisição:', secondResponseData);
                 } else {
-                    console.error('Erro na segunda chamada:', secondResponse.statusText);
+                    console.error(
+                        'Erro na segunda requisição:',
+                        secondResponse.status,
+                        secondResponse.statusText
+                    );
                 }
             } else {
+                console.error(
+                    'Erro na primeira requisição:',
+                    response.status,
+                    response.statusText
+                );
                 alert('Erro ao cadastrar movimento!');
             }
         } catch (error) {
-            console.error('Erro:', error);
-            console.log(requestBody);
-            console.log(endpoint);
-            alert('Erro ao cadastrar movimento!');
+            console.error('Erro na requisição:', error);
+        } finally {
+            setIsSubmitting(false); // Reativar o botão após a conclusão
         }
     };
 
@@ -114,16 +140,16 @@ const CadMovement: React.FC = () => {
             <Form onSubmit={handleSubmit}>
                 <FormTitle>Cadastro de Movimentos</FormTitle>
 
-                <Toggle 
+                <Toggle
                     labelLeft="Entrada"
                     labelRight="Saída"
-                    checked={isEntrada}
+                    checked={!isEntrada} // Corrigido para refletir "Saída" ao alternar
                     onChange={handleToggleChange}
                 />
 
                 <Select 
-                    options={optionsFreq} 
-                    onChange={(e) => setFrequency(e.target.value)} 
+                    options={optionsFreq}
+                    onChange={(e) => setFrequency(e.target.value)}
                 />
 
                 <Input 
@@ -145,10 +171,12 @@ const CadMovement: React.FC = () => {
                     onChange={(e) => setDate(e.target.value)}
                 />
 
-                <Button type="submit">Cadastrar</Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? 'Cadastrando...' : 'Cadastrar'}
+                </Button>
             </Form>
         </Container>
     );
-}
+};
 
 export default CadMovement;

@@ -61,9 +61,10 @@ const AuthProvider: React.FC = ({ children }) => {
                 alert('Senha ou usuário inválidos!');
             }
         } catch (error) {
-            alert('Erro ao fazer login! Por favor, tente novamente.');
+            console.log(error)
             console.log(email);
             console.log(password);
+            alert('Erro ao fazer login! Por favor, tente novamente.');
         }
     };
 
